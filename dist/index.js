@@ -2582,16 +2582,29 @@ function formatTimeUntilReset(ms) {
   }
   return `${minutes}m`;
 }
+function getLimitColor(pct) {
+  if (pct >= 75) {
+    return { emoji: "\u{1F7E2}", ansi: "\x1B[32m" };
+  }
+  if (pct >= 50) {
+    return { emoji: "\u{1F7E1}", ansi: "\x1B[33m" };
+  }
+  if (pct >= 25) {
+    return { emoji: "\u{1F7E0}", ansi: "\x1B[38;5;208m" };
+  }
+  return { emoji: "\u{1F534}", ansi: "\x1B[31m" };
+}
 function drawProgressBar(percentage) {
   const width = 50;
   const filledChar = "\u2588";
   const emptyChar = "\u2591";
   if (percentage === void 0) {
-    return `[${emptyChar.repeat(width)}]`;
+    return `[\x1B[90m${emptyChar.repeat(width)}\x1B[0m]`;
   }
   const filledCount = Math.min(width, Math.max(0, Math.round(percentage / 100 * width)));
   const emptyCount = width - filledCount;
-  return `[${filledChar.repeat(filledCount)}${emptyChar.repeat(emptyCount)}]`;
+  const { ansi } = getLimitColor(percentage);
+  return `[${ansi}${filledChar.repeat(filledCount)}\x1B[0m\x1B[90m${emptyChar.repeat(emptyCount)}\x1B[0m]`;
 }
 function extractGroupLimits(models) {
   let weekly = void 0;
@@ -2632,24 +2645,28 @@ function getLimitOrDefault(limit) {
     return {
       percentage: 100,
       rawPercentage: 100,
-      text: "Quota available"
+      barText: `\x1B[32m100.00%\x1B[0m`,
+      infoText: "\u{1F7E2} Quota available"
     };
   }
   const rawPercentage = limit.remainingPercentage !== void 0 ? limit.remainingPercentage * 100 : 100;
   const percentage = Math.round(rawPercentage * 100) / 100;
+  const { emoji, ansi } = getLimitColor(percentage);
   if (limit.isExhausted || percentage === 0) {
     const timeText2 = limit.timeUntilResetMs ? ` \xB7 Refreshes in ${formatTimeUntilReset(limit.timeUntilResetMs)}` : "";
     return {
       percentage: 0,
       rawPercentage: 0,
-      text: `\u274C EXHAUSTED${timeText2}`
+      barText: `\x1B[31m0.00%\x1B[0m`,
+      infoText: `\u{1F534} \x1B[31m\u274C EXHAUSTED${timeText2}\x1B[0m`
     };
   }
   if (percentage >= 99.99) {
     return {
       percentage: 100,
       rawPercentage: 100,
-      text: "Quota available"
+      barText: `\x1B[32m100.00%\x1B[0m`,
+      infoText: "\u{1F7E2} Quota available"
     };
   }
   const roundedPct = Math.round(percentage);
@@ -2657,7 +2674,8 @@ function getLimitOrDefault(limit) {
   return {
     percentage,
     rawPercentage,
-    text: `${roundedPct}% remaining${timeText}`
+    barText: `${ansi}${percentage.toFixed(2)}%\x1B[0m`,
+    infoText: `${emoji} ${ansi}${roundedPct}% remaining\x1B[0m${timeText}`
   };
 }
 function printQuotaTable(snapshot, options = {}) {
@@ -2683,24 +2701,24 @@ function printQuotaTable(snapshot, options = {}) {
   console.log("  Models within this group: Gemini Flash, Gemini Pro");
   console.log();
   console.log("  Weekly Limit");
-  console.log(`    ${drawProgressBar(gWeekly.rawPercentage)} ${gWeekly.percentage.toFixed(2)}%`);
-  console.log(`    ${gWeekly.text}`);
+  console.log(`    ${drawProgressBar(gWeekly.rawPercentage)} ${gWeekly.barText}`);
+  console.log(`    ${gWeekly.infoText}`);
   console.log();
   console.log("  Five Hour Limit");
-  console.log(`    ${drawProgressBar(gFiveHour.rawPercentage)} ${gFiveHour.percentage.toFixed(2)}%`);
-  console.log(`    ${gFiveHour.text}`);
+  console.log(`    ${drawProgressBar(gFiveHour.rawPercentage)} ${gFiveHour.barText}`);
+  console.log(`    ${gFiveHour.infoText}`);
   console.log();
   console.log();
   console.log("CLAUDE AND GPT MODELS");
   console.log("  Models within this group: Claude Opus, Claude Sonnet, GPT-OSS");
   console.log();
   console.log("  Weekly Limit");
-  console.log(`    ${drawProgressBar(cWeekly.rawPercentage)} ${cWeekly.percentage.toFixed(2)}%`);
-  console.log(`    ${cWeekly.text}`);
+  console.log(`    ${drawProgressBar(cWeekly.rawPercentage)} ${cWeekly.barText}`);
+  console.log(`    ${cWeekly.infoText}`);
   console.log();
   console.log("  Five Hour Limit");
-  console.log(`    ${drawProgressBar(cFiveHour.rawPercentage)} ${cFiveHour.percentage.toFixed(2)}%`);
-  console.log(`    ${cFiveHour.text}`);
+  console.log(`    ${drawProgressBar(cFiveHour.rawPercentage)} ${cFiveHour.barText}`);
+  console.log(`    ${cFiveHour.infoText}`);
   console.log();
   console.log();
   console.log("  \u2502Within each group, models share a weekly limit and a 5-hour limit. Quota is");
