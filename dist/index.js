@@ -2572,7 +2572,6 @@ async function fetchQuotaLocal() {
 }
 
 // src/quota/format.ts
-import Table2 from "cli-table3";
 function formatTimeUntilReset(ms) {
   if (ms === void 0 || ms <= 0) return "N/A";
   const hours = Math.floor(ms / (1e3 * 60 * 60));
@@ -2582,62 +2581,132 @@ function formatTimeUntilReset(ms) {
   }
   return `${minutes}m`;
 }
-function formatRemaining(model) {
-  if (model.isExhausted) {
-    return "\u274C EXHAUSTED";
+function drawProgressBar(percentage) {
+  const width = 50;
+  const filledChar = "\u2588";
+  const emptyChar = "\u2591";
+  if (percentage === void 0) {
+    return `[${emptyChar.repeat(width)}]`;
   }
-  if (model.remainingPercentage === void 0) {
-    return "N/A";
+  const filledCount = Math.min(width, Math.max(0, Math.round(percentage / 100 * width)));
+  const emptyCount = width - filledCount;
+  return `[${filledChar.repeat(filledCount)}${emptyChar.repeat(emptyCount)}]`;
+}
+function extractGroupLimits(models) {
+  let weekly = void 0;
+  let fiveHour = void 0;
+  const weeklyModel = models.find(
+    (m) => m.modelId.toLowerCase().includes("weekly") || m.modelId.toLowerCase().includes("week") || m.timeUntilResetMs !== void 0 && m.timeUntilResetMs > 5.5 * 60 * 60 * 1e3
+  );
+  if (weeklyModel) {
+    weekly = {
+      remainingPercentage: weeklyModel.remainingPercentage,
+      timeUntilResetMs: weeklyModel.timeUntilResetMs,
+      isExhausted: weeklyModel.isExhausted
+    };
   }
-  const pct = Math.round(model.remainingPercentage * 100);
-  if (pct >= 75) return `\u{1F7E2} ${pct}%`;
-  if (pct >= 50) return `\u{1F7E1} ${pct}%`;
-  if (pct >= 25) return `\u{1F7E0} ${pct}%`;
-  return `\u{1F534} ${pct}%`;
+  const fiveHourModel = models.find(
+    (m) => m.modelId.toLowerCase().includes("five") || m.modelId.toLowerCase().includes("5h") || m.modelId.toLowerCase().includes("hour") || m.modelId.toLowerCase().includes("daily") || m.timeUntilResetMs !== void 0 && m.timeUntilResetMs <= 5.5 * 60 * 60 * 1e3 || !m.modelId.toLowerCase().includes("weekly") && !m.modelId.toLowerCase().includes("week")
+  );
+  if (fiveHourModel) {
+    fiveHour = {
+      remainingPercentage: fiveHourModel.remainingPercentage,
+      timeUntilResetMs: fiveHourModel.timeUntilResetMs,
+      isExhausted: fiveHourModel.isExhausted
+    };
+  }
+  if (models.length > 0) {
+    if (!weekly && !fiveHour) {
+      fiveHour = {
+        remainingPercentage: models[0].remainingPercentage,
+        timeUntilResetMs: models[0].timeUntilResetMs,
+        isExhausted: models[0].isExhausted
+      };
+    }
+  }
+  return { weekly, fiveHour };
+}
+function getLimitOrDefault(limit) {
+  if (!limit) {
+    return {
+      percentage: 100,
+      rawPercentage: 100,
+      text: "Quota available"
+    };
+  }
+  const rawPercentage = limit.remainingPercentage !== void 0 ? limit.remainingPercentage * 100 : 100;
+  const percentage = Math.round(rawPercentage * 100) / 100;
+  if (limit.isExhausted || percentage === 0) {
+    const timeText2 = limit.timeUntilResetMs ? ` \xB7 Refreshes in ${formatTimeUntilReset(limit.timeUntilResetMs)}` : "";
+    return {
+      percentage: 0,
+      rawPercentage: 0,
+      text: `\u274C EXHAUSTED${timeText2}`
+    };
+  }
+  if (percentage >= 99.99) {
+    return {
+      percentage: 100,
+      rawPercentage: 100,
+      text: "Quota available"
+    };
+  }
+  const roundedPct = Math.round(percentage);
+  const timeText = limit.timeUntilResetMs ? ` \xB7 Refreshes in ${formatTimeUntilReset(limit.timeUntilResetMs)}` : "";
+  return {
+    percentage,
+    rawPercentage,
+    text: `${roundedPct}% remaining${timeText}`
+  };
 }
 function printQuotaTable(snapshot, options = {}) {
-  const timestamp = new Date(snapshot.timestamp).toLocaleString();
+  const email = snapshot.email || "Unknown";
+  const geminiModels = snapshot.models.filter(
+    (m) => m.label.toLowerCase().includes("gemini") || m.modelId.toLowerCase().includes("gemini")
+  );
+  const claudeGptModels = snapshot.models.filter(
+    (m) => m.label.toLowerCase().includes("claude") || m.label.toLowerCase().includes("gpt") || m.modelId.toLowerCase().includes("claude") || m.modelId.toLowerCase().includes("gpt")
+  );
+  const geminiLimits = extractGroupLimits(geminiModels);
+  const claudeGptLimits = extractGroupLimits(claudeGptModels);
+  const gWeekly = getLimitOrDefault(geminiLimits.weekly);
+  const gFiveHour = getLimitOrDefault(geminiLimits.fiveHour);
+  const cWeekly = getLimitOrDefault(claudeGptLimits.weekly);
+  const cFiveHour = getLimitOrDefault(claudeGptLimits.fiveHour);
   console.log();
-  console.log(`\u{1F4CA} Antigravity Quota Status (via ${snapshot.method.toUpperCase()})`);
-  console.log(`   Retrieved: ${timestamp}`);
-  if (snapshot.email || snapshot.planType) {
-    const userParts = [];
-    if (snapshot.email) {
-      userParts.push(`\u{1F464} ${snapshot.email}`);
-    }
-    if (snapshot.planType) {
-      userParts.push(`\u{1F4CB} Plan: ${snapshot.planType}`);
-    }
-    console.log(`   ${userParts.join(" | ")}`);
-  }
-  if (snapshot.promptCredits) {
-    const pc = snapshot.promptCredits;
-    const pct = Math.round(pc.remainingPercentage * 100);
-    console.log(`   Prompt Credits: ${pc.available}/${pc.monthly} (${pct}% remaining)`);
-  }
-  const visibleModels = options.allModels ? snapshot.models : snapshot.models.filter((m) => !m.isAutocompleteOnly);
-  if (visibleModels.length > 0) {
-    const table = new Table2({
-      head: ["Model", "Remaining", "Resets In"],
-      style: {
-        head: ["cyan"],
-        border: ["gray"]
-      }
-    });
-    for (const model of visibleModels) {
-      table.push([
-        model.label,
-        formatRemaining(model),
-        formatTimeUntilReset(model.timeUntilResetMs)
-      ]);
-    }
-    console.log(table.toString());
-  } else {
-    console.log("No model quota information available.");
-    if (!options.allModels && snapshot.models.some((m) => m.isAutocompleteOnly)) {
-      console.log("Tip: Use --all-models to see autocomplete models.");
-    }
-  }
+  console.log(" Models & Quota");
+  console.log();
+  console.log(`  Account: ${email}`);
+  console.log();
+  console.log("GEMINI MODELS");
+  console.log("  Models within this group: Gemini Flash, Gemini Pro");
+  console.log();
+  console.log("  Weekly Limit");
+  console.log(`    ${drawProgressBar(gWeekly.rawPercentage)} ${gWeekly.percentage.toFixed(2)}%`);
+  console.log(`    ${gWeekly.text}`);
+  console.log();
+  console.log("  Five Hour Limit");
+  console.log(`    ${drawProgressBar(gFiveHour.rawPercentage)} ${gFiveHour.percentage.toFixed(2)}%`);
+  console.log(`    ${gFiveHour.text}`);
+  console.log();
+  console.log();
+  console.log("CLAUDE AND GPT MODELS");
+  console.log("  Models within this group: Claude Opus, Claude Sonnet, GPT-OSS");
+  console.log();
+  console.log("  Weekly Limit");
+  console.log(`    ${drawProgressBar(cWeekly.rawPercentage)} ${cWeekly.percentage.toFixed(2)}%`);
+  console.log(`    ${cWeekly.text}`);
+  console.log();
+  console.log("  Five Hour Limit");
+  console.log(`    ${drawProgressBar(cFiveHour.rawPercentage)} ${cFiveHour.percentage.toFixed(2)}%`);
+  console.log(`    ${cFiveHour.text}`);
+  console.log();
+  console.log();
+  console.log("  \u2502Within each group, models share a weekly limit and a 5-hour limit. Quota is");
+  console.log("  \u2502consumed proportionally to the cost of the tokens. Thus, limits will last");
+  console.log("  \u2502longer with shorter tasks or using more cost-effective models. The 5-hour");
+  console.log("  \u2502limit smooths out aggregate demand to fairly distribute global capacity across");
+  console.log("  \u2502all users, while your weekly limit is tied directly to your individual tier.");
   console.log();
 }
 function printQuotaJson(snapshot) {
@@ -2645,7 +2714,7 @@ function printQuotaJson(snapshot) {
 }
 
 // src/render/table.ts
-import Table3 from "cli-table3";
+import Table2 from "cli-table3";
 function formatRelativeTime(isoDate) {
   if (!isoDate) return "Never";
   const date = new Date(isoDate);
@@ -2698,7 +2767,7 @@ function renderAccountsTable(accounts) {
   if (finalColWidths) {
     tableOptions.colWidths = finalColWidths;
   }
-  const table = new Table3(tableOptions);
+  const table = new Table2(tableOptions);
   for (const account of accounts) {
     const nameDisplay = account.isActive ? `${account.email} [*]` : account.email;
     table.push([
@@ -2764,7 +2833,7 @@ function renderAllQuotaTable(results, options = {}) {
   if (colWidths) {
     tableOptions.colWidths = colWidths;
   }
-  const table = new Table3(tableOptions);
+  const table = new Table2(tableOptions);
   const errors = [];
   for (const result of sortedResults) {
     const nameDisplay = result.isActive ? `${result.email} [*]` : result.email;
@@ -3282,7 +3351,7 @@ async function accountsCommand(subcommand, args, options) {
 
 // src/commands/wakeup.ts
 import inquirer2 from "inquirer";
-import Table4 from "cli-table3";
+import Table3 from "cli-table3";
 
 // src/wakeup/types.ts
 function getDefaultConfig() {
@@ -4274,7 +4343,7 @@ async function showHistory(options) {
   console.log(`
 \u{1F4DC} Trigger History (last ${Math.min(limit, history.length)} records)
 `);
-  const table = new Table4({
+  const table = new Table3({
     head: ["Time", "Source", "Model", "Account", "Duration", "Status"],
     style: { head: ["cyan"] }
   });

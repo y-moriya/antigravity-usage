@@ -44,38 +44,52 @@ describe('printQuotaTable', () => {
     consoleSpy.mockRestore()
   })
 
-  it('should output table format', () => {
+  it('should output model & quota format', () => {
     const snapshot: QuotaSnapshot = {
       timestamp: '2026-01-14T12:00:00.000Z',
       method: 'google',
-      promptCredits: {
-        available: 450,
-        monthly: 500,
-        usedPercentage: 0.1,
-        remainingPercentage: 0.9
-      },
+      email: 'test@example.com',
       models: [
         {
-          label: 'Test Model',
-          modelId: 'test-model',
-          remainingPercentage: 0.85,
+          label: 'Gemini Flash',
+          modelId: 'gemini-flash-weekly',
+          remainingPercentage: 0.9362,
           isExhausted: false,
-          timeUntilResetMs: 3600000
+          timeUntilResetMs: 162 * 60 * 60 * 1000 + 4 * 60 * 1000 // 162h 4m
+        },
+        {
+          label: 'Gemini Pro',
+          modelId: 'gemini-pro-5h',
+          remainingPercentage: 0.6171,
+          isExhausted: false,
+          timeUntilResetMs: 2 * 60 * 60 * 1000 + 57 * 60 * 1000 // 2h 57m
+        },
+        {
+          label: 'Claude Opus',
+          modelId: 'claude-opus',
+          remainingPercentage: 1.0,
+          isExhausted: false
         }
       ]
     }
 
     printQuotaTable(snapshot)
 
-    // Verify console was called multiple times (header, table)
-    expect(consoleSpy.mock.calls.length).toBeGreaterThan(2)
+    // Verify console was called multiple times
+    expect(consoleSpy.mock.calls.length).toBeGreaterThan(5)
 
     // Check that some expected content is in the output
     const allOutput = consoleSpy.mock.calls.map(c => c[0]).join('\n')
-    expect(allOutput).toContain('Antigravity')
-    expect(allOutput).toContain('Test Model')
-    expect(allOutput).toContain('85%')
-    expect(allOutput).toContain('Prompt Credits: 450/500 (90% remaining)')
+    expect(allOutput).toContain('Models & Quota')
+    expect(allOutput).toContain('Account: test@example.com')
+    expect(allOutput).toContain('GEMINI MODELS')
+    expect(allOutput).toContain('CLAUDE AND GPT MODELS')
+    expect(allOutput).toContain('93.62%')
+    expect(allOutput).toContain('94% remaining')
+    expect(allOutput).toContain('162h 4m')
+    expect(allOutput).toContain('61.71%')
+    expect(allOutput).toContain('62% remaining')
+    expect(allOutput).toContain('2h 57m')
   })
 
   it('should handle exhausted models', () => {
@@ -84,9 +98,11 @@ describe('printQuotaTable', () => {
       method: 'google',
       models: [
         {
-          label: 'Exhausted Model',
-          modelId: 'exhausted',
-          isExhausted: true
+          label: 'Gemini Flash',
+          modelId: 'gemini-flash',
+          isExhausted: true,
+          remainingPercentage: 0,
+          timeUntilResetMs: 3600000
         }
       ]
     }
@@ -97,45 +113,29 @@ describe('printQuotaTable', () => {
     expect(allOutput).toContain('EXHAUSTED')
   })
 
-  it('should filter autocomplete models by default', () => {
+  it('should run without error even with no models', () => {
     const snapshot: QuotaSnapshot = {
       timestamp: '2026-01-14T12:00:00.000Z',
       method: 'google',
-      models: [
-        {
-          label: 'Coding Model',
-          modelId: 'coding',
-          isExhausted: false,
-          isAutocompleteOnly: false
-        },
-        {
-          label: 'Autocomplete Model',
-          modelId: 'gemini-2.5-flash',
-          isExhausted: false,
-          isAutocompleteOnly: true
-        }
-      ]
+      models: []
     }
 
     printQuotaTable(snapshot)
 
     const allOutput = consoleSpy.mock.calls.map(c => c[0]).join('\n')
-    expect(allOutput).toContain('Coding Model')
-    expect(allOutput).not.toContain('Autocomplete Model')
-    // The tip is shown when visibleModels.length is 0 but there ARE autocomplete models.
-    // In this test, visibleModels.length is 1 (Coding Model).
+    expect(allOutput).toContain('Models & Quota')
   })
 
-  it('should show autocomplete models when allModels option is true', () => {
+  it('should run with allModels option', () => {
     const snapshot: QuotaSnapshot = {
       timestamp: '2026-01-14T12:00:00.000Z',
       method: 'google',
       models: [
         {
-          label: 'Autocomplete Model',
-          modelId: 'gemini-2.5-flash',
+          label: 'Gemini Flash',
+          modelId: 'gemini-flash',
           isExhausted: false,
-          isAutocompleteOnly: true
+          remainingPercentage: 1.0
         }
       ]
     }
@@ -143,6 +143,6 @@ describe('printQuotaTable', () => {
     printQuotaTable(snapshot, { allModels: true })
 
     const allOutput = consoleSpy.mock.calls.map(c => c[0]).join('\n')
-    expect(allOutput).toContain('Autocomplete Model')
+    expect(allOutput).toContain('Models & Quota')
   })
 })
