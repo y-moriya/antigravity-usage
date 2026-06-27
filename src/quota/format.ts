@@ -67,6 +67,13 @@ export function printQuotaTable(snapshot: QuotaSnapshot, options: FormatOptions 
     console.log(`   ${userParts.join(' | ')}`)
   }
 
+  // Display prompt credits if available
+  if (snapshot.promptCredits) {
+    const pc = snapshot.promptCredits
+    const pct = Math.round(pc.remainingPercentage * 100)
+    console.log(`   Prompt Credits: ${pc.available}/${pc.monthly} (${pct}% remaining)`)
+  }
+
   const visibleModels = options.allModels
     ? snapshot.models
     : snapshot.models.filter(m => !m.isAutocompleteOnly)

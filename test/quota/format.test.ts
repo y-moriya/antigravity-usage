@@ -75,6 +75,7 @@ describe('printQuotaTable', () => {
     expect(allOutput).toContain('Antigravity')
     expect(allOutput).toContain('Test Model')
     expect(allOutput).toContain('85%')
+    expect(allOutput).toContain('Prompt Credits: 450/500 (90% remaining)')
   })
 
   it('should handle exhausted models', () => {

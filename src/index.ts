@@ -55,6 +55,7 @@ program
 // Quota command (default)
 program
   .command('quota', { isDefault: true })
+  .alias('usage')
   .description('Fetch and display quota information')
   .option('--json', 'Output as JSON')
   .option('-m, --method <method>', 'Method to use: auto (default), local, or google', 'auto')
