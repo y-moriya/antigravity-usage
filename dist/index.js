@@ -534,7 +534,7 @@ var OAUTH_CONFIG = {
   ]
 };
 var CLOUDCODE_CONFIG = {
-  baseUrl: "https://cloudcode-pa.googleapis.com",
+  baseUrl: "https://daily-cloudcode-pa.googleapis.com",
   userAgent: "antigravity",
   metadata: {
     ideType: "ANTIGRAVITY",
@@ -1442,6 +1442,7 @@ function statusCommand(options = {}) {
 // src/google/cloudcode.ts
 import { randomUUID } from "crypto";
 var BASE_URLS = [
+  "https://daily-cloudcode-pa.googleapis.com",
   "https://cloudcode-pa.googleapis.com",
   "https://daily-cloudcode-pa.sandbox.googleapis.com"
 ];

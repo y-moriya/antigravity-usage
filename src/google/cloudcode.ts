@@ -7,8 +7,9 @@ import { debug } from '../core/logger.js'
 import { APIError, AuthenticationError, NetworkError, RateLimitError } from '../core/errors.js'
 import type { TokenManager } from './token-manager.js'
 
-// Base URLs - try production first, then sandbox (matching example.ts)
+// Base URLs - try daily production first, then fallback to standard, then sandbox
 const BASE_URLS = [
+  'https://daily-cloudcode-pa.googleapis.com',
   'https://cloudcode-pa.googleapis.com',
   'https://daily-cloudcode-pa.sandbox.googleapis.com'
 ]

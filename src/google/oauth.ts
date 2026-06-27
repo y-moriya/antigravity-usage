@@ -25,7 +25,7 @@ const OAUTH_CONFIG = {
 
 // Cloud Code API configuration
 const CLOUDCODE_CONFIG = {
-  baseUrl: 'https://cloudcode-pa.googleapis.com',
+  baseUrl: 'https://daily-cloudcode-pa.googleapis.com',
   userAgent: 'antigravity',
   metadata: {
     ideType: 'ANTIGRAVITY',
