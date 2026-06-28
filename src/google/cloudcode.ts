@@ -87,7 +87,7 @@ export class CloudCodeClient {
   
   constructor(private tokenManager: TokenManager) {
     // Initialize project ID from cached tokens (stored during login/quota fetch)
-    this.projectId = tokenManager.getProjectId()
+    this.projectId = tokenManager.getProjectId() || 'default-cli-project'
   }
   
   /**
@@ -171,6 +171,9 @@ export class CloudCodeClient {
         this.projectId = response.cloudaicompanionProject.id
       }
       debug('cloudcode', `Project ID: ${this.projectId}`)
+    } else {
+      this.projectId = this.projectId || 'default-cli-project'
+      debug('cloudcode', `Project ID (defaulted): ${this.projectId}`)
     }
     
     return response
@@ -277,7 +280,8 @@ export class CloudCodeClient {
    * Requires project ID from loadCodeAssist
    */
   async fetchAvailableModels(): Promise<FetchAvailableModelsResponse> {
-    const body = this.projectId ? { project: this.projectId } : {}
+    const projectId = this.projectId || 'default-cli-project'
+    const body = { project: projectId }
     return this.request<FetchAvailableModelsResponse>('/v1internal:fetchAvailableModels', body)
   }
   

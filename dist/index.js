@@ -1459,7 +1459,7 @@ var METADATA = {
 var CloudCodeClient = class {
   constructor(tokenManager) {
     this.tokenManager = tokenManager;
-    this.projectId = tokenManager.getProjectId();
+    this.projectId = tokenManager.getProjectId() || "default-cli-project";
   }
   projectId;
   /**
@@ -1526,6 +1526,9 @@ var CloudCodeClient = class {
         this.projectId = response.cloudaicompanionProject.id;
       }
       debug("cloudcode", `Project ID: ${this.projectId}`);
+    } else {
+      this.projectId = this.projectId || "default-cli-project";
+      debug("cloudcode", `Project ID (defaulted): ${this.projectId}`);
     }
     return response;
   }
@@ -1601,7 +1604,8 @@ var CloudCodeClient = class {
    * Requires project ID from loadCodeAssist
    */
   async fetchAvailableModels() {
-    const body = this.projectId ? { project: this.projectId } : {};
+    const projectId = this.projectId || "default-cli-project";
+    const body = { project: projectId };
     return this.request("/v1internal:fetchAvailableModels", body);
   }
   /**
