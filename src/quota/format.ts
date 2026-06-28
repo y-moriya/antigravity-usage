@@ -210,6 +210,7 @@ export function printQuotaTable(snapshot: QuotaSnapshot, options: FormatOptions 
   console.log(' Models & Quota')
   console.log()
   console.log(`  Account: ${email}`)
+  console.log(`  [Debug] Models: ${snapshot.models.map(m => `${m.modelId}(pct=${m.remainingPercentage !== undefined ? Math.round(m.remainingPercentage * 100) : 'N/A'}%, reset=${m.timeUntilResetMs ? formatTimeUntilReset(m.timeUntilResetMs) : 'none'})`).join(', ')}`)
   console.log()
   console.log('GEMINI MODELS')
   console.log('  Models within this group: Gemini Flash, Gemini Pro')
