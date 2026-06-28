@@ -67,8 +67,8 @@ function parsePromptCredits(response: LoadCodeAssistResponse): PromptCreditsInfo
  * Filter out internal models and only show recommended ones
  */
 function shouldShowModel(modelId: string, model: ModelInfo): boolean {
-  // Skip internal models
-  if (modelId.startsWith('chat_') || modelId.startsWith('tab_')) {
+  // Skip tab-autocomplete models
+  if (modelId.startsWith('tab_')) {
     return false
   }
   // Skip image generation models

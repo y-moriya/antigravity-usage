@@ -136,7 +136,7 @@ describe('parseQuotaSnapshot', () => {
     expect(snapshot.models[0].timeUntilResetMs).toBeUndefined()
   })
 
-  it('should filter out internal models', () => {
+  it('should keep chat models but filter out tab models', () => {
     const modelsResponse: FetchAvailableModelsResponse = {
       models: {
         'chat_12345': {
@@ -156,8 +156,8 @@ describe('parseQuotaSnapshot', () => {
 
     const snapshot = parseQuotaSnapshot({}, modelsResponse)
 
-    // Only gemini-2.5-pro should be included
-    expect(snapshot.models.some(m => m.modelId === 'chat_12345')).toBe(false)
+    // chat_ models should be included, tab_ models should be filtered out
+    expect(snapshot.models.some(m => m.modelId === 'chat_12345')).toBe(true)
     expect(snapshot.models.some(m => m.modelId === 'tab_flash')).toBe(false)
 
     const gemini25 = snapshot.models.find(m => m.modelId === 'gemini-2.5-pro')

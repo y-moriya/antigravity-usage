@@ -92,14 +92,19 @@ function extractGroupLimits(models: ModelQuotaInfo[]) {
   }
 
   // Five Hour Limit:
-  // 1. timeUntilResetMs <= 5.5 hours OR modelId contains 'five' / '5h' / 'hour' / 'daily'
+  // 1. Must NOT have a reset time greater than 5.5 hours (if it has one)
+  // 2. Matches 'five', '5h', 'hour', 'daily', or starts with 'chat_'
+  // 3. Or does not contain 'weekly'/'week' (as a fallback)
   const fiveHourModel = models.find(m => 
-    m.modelId.toLowerCase().includes('five') || 
-    m.modelId.toLowerCase().includes('5h') || 
-    m.modelId.toLowerCase().includes('hour') || 
-    m.modelId.toLowerCase().includes('daily') ||
-    (m.timeUntilResetMs !== undefined && m.timeUntilResetMs <= 5.5 * 60 * 60 * 1000) ||
-    (!m.modelId.toLowerCase().includes('weekly') && !m.modelId.toLowerCase().includes('week'))
+    (m.timeUntilResetMs === undefined || m.timeUntilResetMs <= 5.5 * 60 * 60 * 1000) &&
+    (
+      m.modelId.toLowerCase().includes('five') || 
+      m.modelId.toLowerCase().includes('5h') || 
+      m.modelId.toLowerCase().includes('hour') || 
+      m.modelId.toLowerCase().includes('daily') ||
+      m.modelId.toLowerCase().startsWith('chat_') ||
+      (!m.modelId.toLowerCase().includes('weekly') && !m.modelId.toLowerCase().includes('week'))
+    )
   )
 
   if (fiveHourModel) {

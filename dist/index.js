@@ -1796,7 +1796,7 @@ function parsePromptCredits(response) {
   };
 }
 function shouldShowModel(modelId, model) {
-  if (modelId.startsWith("chat_") || modelId.startsWith("tab_")) {
+  if (modelId.startsWith("tab_")) {
     return false;
   }
   if (modelId.includes("image")) {
@@ -2620,7 +2620,7 @@ function extractGroupLimits(models) {
     };
   }
   const fiveHourModel = models.find(
-    (m) => m.modelId.toLowerCase().includes("five") || m.modelId.toLowerCase().includes("5h") || m.modelId.toLowerCase().includes("hour") || m.modelId.toLowerCase().includes("daily") || m.timeUntilResetMs !== void 0 && m.timeUntilResetMs <= 5.5 * 60 * 60 * 1e3 || !m.modelId.toLowerCase().includes("weekly") && !m.modelId.toLowerCase().includes("week")
+    (m) => (m.timeUntilResetMs === void 0 || m.timeUntilResetMs <= 5.5 * 60 * 60 * 1e3) && (m.modelId.toLowerCase().includes("five") || m.modelId.toLowerCase().includes("5h") || m.modelId.toLowerCase().includes("hour") || m.modelId.toLowerCase().includes("daily") || m.modelId.toLowerCase().startsWith("chat_") || !m.modelId.toLowerCase().includes("weekly") && !m.modelId.toLowerCase().includes("week"))
   );
   if (fiveHourModel) {
     fiveHour = {
