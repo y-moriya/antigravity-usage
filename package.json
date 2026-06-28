@@ -1,10 +1,11 @@
 {
-  "name": "antigravity-usage",
+  "name": "agy-usage",
   "version": "0.2.9",
   "description": "CLI tool to check Antigravity model quota via Google Cloud Code API",
   "type": "module",
   "main": "dist/index.js",
   "bin": {
+    "agy-usage": "dist/index.js",
     "antigravity-usage": "dist/index.js"
   },
   "scripts": {

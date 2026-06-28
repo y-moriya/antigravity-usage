@@ -53,7 +53,7 @@ async function fetchSingleAccountQuota(options: QuotaOptions): Promise<void> {
       : getTokenManager()
 
     if (!tokenManager.isLoggedIn()) {
-      logError('Not logged in. Run: antigravity-usage login')
+      logError('Not logged in. Run: agy-usage login')
       process.exit(1)
     }
   }
@@ -103,7 +103,7 @@ async function fetchAllAccountsQuota(options: QuotaOptions): Promise<void> {
   const activeEmail = manager.getActiveEmail()
 
   if (emails.length === 0) {
-    logError('No accounts found. Run: antigravity-usage login')
+    logError('No accounts found. Run: agy-usage login')
     process.exit(1)
   }
 

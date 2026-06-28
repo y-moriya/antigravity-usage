@@ -11,7 +11,7 @@ import { tmpdir } from 'node:os'
 // In real tests, you might want to mock the env module
 
 describe('storage', () => {
-  const testDir = join(tmpdir(), 'antigravity-usage-test-' + Date.now())
+  const testDir = join(tmpdir(), 'agy-usage-test-' + Date.now())
   
   beforeEach(() => {
     // Create test directory

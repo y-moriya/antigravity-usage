@@ -11,7 +11,8 @@ import type { CronInstallResult, CronStatus } from './types.js'
 const execAsync = promisify(exec)
 
 // Comment marker to identify our cron entries
-const CRON_COMMENT_MARKER = 'antigravity-usage-wakeup'
+const CRON_COMMENT_MARKER = 'agy-usage-wakeup'
+const OLD_CRON_COMMENT_MARKER = 'agy-usage-wakeup'
 
 /**
  * Get PATH directories for cron environment
@@ -115,10 +116,14 @@ async function saveCrontab(lines: string[]): Promise<void> {
 }
 
 /**
- * Remove all antigravity-usage-wakeup entries from crontab lines
+ * Remove all agy-usage-wakeup entries from crontab lines
  */
 function removeWakeupEntries(lines: string[]): string[] {
-  return lines.filter(line => !line.includes(CRON_COMMENT_MARKER))
+  return lines.filter(line => 
+    !line.includes(CRON_COMMENT_MARKER) && 
+    !line.includes(OLD_CRON_COMMENT_MARKER) &&
+    !line.includes('agy-usage wakeup trigger')
+  )
 }
 
 /**
@@ -151,7 +156,7 @@ export async function installCronJob(cronExpression: string): Promise<CronInstal
     // Load existing crontab
     const lines = await loadCrontab()
     
-    // Remove any existing antigravity-usage entries (both PATH and job lines)
+    // Remove any existing agy-usage entries (both PATH and job lines)
     const filteredLines = removeWakeupEntries(lines)
     
     // Add PATH if not already set for other cron jobs
@@ -161,8 +166,8 @@ export async function installCronJob(cronExpression: string): Promise<CronInstal
     }
     
     // Create new cron entry with simple, portable command
-    // Using 'antigravity-usage' instead of absolute paths makes it work anywhere
-    const cronLine = `${cronExpression} antigravity-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}`
+    // Using 'agy-usage' instead of absolute paths makes it work anywhere
+    const cronLine = `${cronExpression} agy-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}`
     
     // Add new entry
     filteredLines.push(cronLine)
@@ -278,12 +283,12 @@ function getManualInstructions(cronExpression: string): string {
   
   return `
 Failed to automatically install cron job. Please add manually:
-
+ 
 1. Open terminal and run: crontab -e
 
 2. Add these lines:
    PATH=${pathValue}
-   ${cronExpression} antigravity-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}
+   ${cronExpression} agy-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}
 
 3. Save and exit the editor
 
@@ -304,7 +309,7 @@ To set up manually using Task Scheduler:
 2. Create a new Basic Task
 3. Set trigger: Based on your schedule (${cronExpression})
 4. Set action: Start a program
-   - Program: antigravity-usage
+   - Program: agy-usage
    - Arguments: wakeup trigger --scheduled
 5. Save the task
 

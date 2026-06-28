@@ -17,25 +17,39 @@ export function getPlatform(): Platform {
   return 'linux'
 }
 
+import { existsSync } from 'node:fs'
+
 /**
  * Get the config directory for this application
- * - Windows: %APPDATA%/antigravity-usage
- * - macOS: ~/Library/Application Support/antigravity-usage
- * - Linux: ~/.config/antigravity-usage
+ * - Windows: %APPDATA%/agy-usage (or agy-usage)
+ * - macOS: ~/Library/Application Support/agy-usage (or agy-usage)
+ * - Linux: ~/.config/agy-usage (or agy-usage)
  */
 export function getConfigDir(): string {
   const p = getPlatform()
   const home = homedir()
   
-  switch (p) {
-    case 'windows':
-      return join(process.env.APPDATA || join(home, 'AppData', 'Roaming'), 'antigravity-usage')
-    case 'macos':
-      return join(home, 'Library', 'Application Support', 'antigravity-usage')
-    case 'linux':
-    default:
-      return join(process.env.XDG_CONFIG_HOME || join(home, '.config'), 'antigravity-usage')
+  const getPath = (name: string) => {
+    switch (p) {
+      case 'windows':
+        return join(process.env.APPDATA || join(home, 'AppData', 'Roaming'), name)
+      case 'macos':
+        return join(home, 'Library', 'Application Support', name)
+      case 'linux':
+      default:
+        return join(process.env.XDG_CONFIG_HOME || join(home, '.config'), name)
+    }
   }
+
+  const oldPath = getPath('agy-usage')
+  const newPath = getPath('agy-usage')
+
+  // If old config path exists, keep using it for seamless migration
+  if (existsSync(oldPath)) {
+    return oldPath
+  }
+
+  return newPath
 }
 
 /**

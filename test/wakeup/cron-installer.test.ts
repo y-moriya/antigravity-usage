@@ -29,7 +29,7 @@ describe('Cron Installer', () => {
       originalCrontab = null
     }
     
-    // Clean up any existing antigravity-usage cron jobs for clean test state
+    // Clean up any existing agy-usage cron jobs for clean test state
     await uninstallCronJob()
   })
   
@@ -77,8 +77,8 @@ describe('Cron Installer', () => {
       
       // Verify it's actually in crontab
       const crontab = execSync('crontab -l', { encoding: 'utf-8' })
-      expect(crontab).toContain('antigravity-usage wakeup trigger --scheduled')
-      expect(crontab).toContain('antigravity-usage-wakeup')
+      expect(crontab).toContain('agy-usage wakeup trigger --scheduled')
+      expect(crontab).toContain('agy-usage-wakeup')
     })
     
     it('should add PATH to crontab', { skip: !isCronSupported() }, async () => {
@@ -95,11 +95,11 @@ describe('Cron Installer', () => {
       
       const crontab = execSync('crontab -l', { encoding: 'utf-8' })
       // Should NOT contain absolute paths to node
-      expect(crontab).toContain('antigravity-usage wakeup trigger --scheduled')
+      expect(crontab).toContain('agy-usage wakeup trigger --scheduled')
       // Should be the simple command on the scheduled line
-      const cronLine = crontab.split('\n').find(line => line.includes('antigravity-usage-wakeup'))
+      const cronLine = crontab.split('\n').find(line => line.includes('agy-usage-wakeup'))
       expect(cronLine).toBeTruthy()
-      expect(cronLine).toMatch(/^\d+ \d+ \* \* \* antigravity-usage/)
+      expect(cronLine).toMatch(/^\d+ \d+ \* \* \* agy-usage/)
     })
     
     it('should replace existing cron job', { skip: !isCronSupported() }, async () => {
@@ -110,7 +110,7 @@ describe('Cron Installer', () => {
       await installCronJob('0 10 * * *')
       
       const crontab = execSync('crontab -l', { encoding: 'utf-8' })
-      const cronLines = crontab.split('\n').filter(line => line.includes('antigravity-usage-wakeup'))
+      const cronLines = crontab.split('\n').filter(line => line.includes('agy-usage-wakeup'))
       
       // Should only have one entry
       expect(cronLines.length).toBe(1)

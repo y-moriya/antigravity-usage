@@ -53,7 +53,7 @@ function formatCredits(credits: { used: number; limit: number } | null | undefin
 export function renderAccountsTable(accounts: AccountSummary[]): void {
   if (accounts.length === 0) {
     console.log('\n📭 No accounts found.')
-    console.log('\n💡 Run `antigravity-usage login` to add an account.\n')
+    console.log('\n💡 Run `agy-usage login` to add an account.\n')
     return
   }
 
@@ -147,7 +147,7 @@ export interface RenderOptions {
 export function renderAllQuotaTable(results: AllAccountsQuotaResult[], options: RenderOptions = {}): void {
   if (results.length === 0) {
     console.log('\n📭 No accounts found.')
-    console.log('\n💡 Run `antigravity-usage login` to add an account.\n')
+    console.log('\n💡 Run `agy-usage login` to add an account.\n')
     return
   }
 

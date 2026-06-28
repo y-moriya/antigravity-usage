@@ -8,7 +8,7 @@ import { join } from 'node:path'
 import { tmpdir } from 'node:os'
 
 // Mock the env module before importing storage
-const testDir = join(tmpdir(), 'antigravity-usage-test-' + Date.now())
+const testDir = join(tmpdir(), 'agy-usage-test-' + Date.now())
 
 vi.mock('../../src/core/env.js', () => ({
   getConfigDir: () => testDir,

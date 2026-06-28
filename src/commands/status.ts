@@ -29,7 +29,7 @@ function showSingleAccountStatus(email?: string): void {
   if (!tokenManager.isLoggedIn()) {
     warn('Not logged in')
     console.log()
-    info('Run `antigravity-usage login` to authenticate.')
+    info('Run `agy-usage login` to authenticate.')
     console.log()
     return
   }
@@ -81,7 +81,7 @@ function showAllAccountsStatus(): void {
   if (emails.length === 0) {
     warn('No accounts found.')
     console.log()
-    info('Run `antigravity-usage login` to add an account.')
+    info('Run `agy-usage login` to add an account.')
     console.log()
     return
   }

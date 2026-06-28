@@ -1,5 +1,5 @@
 /**
- * antigravity-usage CLI entry point
+ * agy-usage CLI entry point
  */
 
 import { Command } from 'commander'
@@ -17,8 +17,8 @@ import { accountsCommand } from './commands/accounts.js'
 const program = new Command()
 
 program
-  .name('antigravity-usage')
-  .description('CLI tool to check Antigravity model quota via Google Cloud Code API')
+  .name('agy-usage')
+  .description('CLI tool to check Antigravity model quota via Google Cloud Code API (agy-usage)')
   .version(version)
   .option('--debug', 'Enable debug mode')
   .hook('preAction', (thisCommand) => {

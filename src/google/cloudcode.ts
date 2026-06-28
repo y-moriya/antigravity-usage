@@ -115,7 +115,7 @@ export class CloudCodeClient {
       if (response.status === 401 || response.status === 403) {
         const errorBody = await response.text()
         debug('cloudcode', `Auth error body: ${errorBody}`)
-        throw new AuthenticationError('Authentication failed. Please run: antigravity-usage login')
+        throw new AuthenticationError('Authentication failed. Please run: agy-usage login')
       }
       
       if (response.status === 429) {

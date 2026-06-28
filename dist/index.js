@@ -60,12 +60,13 @@ var DEFAULT_CONFIG = {
 };
 
 // src/accounts/storage.ts
-import { existsSync, mkdirSync, readFileSync as readFileSync2, writeFileSync, readdirSync, rmSync } from "fs";
+import { existsSync as existsSync2, mkdirSync, readFileSync as readFileSync2, writeFileSync, readdirSync, rmSync } from "fs";
 import { join as join3 } from "path";
 
 // src/core/env.ts
 import { homedir, platform } from "os";
 import { join as join2 } from "path";
+import { existsSync } from "fs";
 function getPlatform() {
   const p = platform();
   if (p === "win32") return "windows";
@@ -75,15 +76,23 @@ function getPlatform() {
 function getConfigDir() {
   const p = getPlatform();
   const home = homedir();
-  switch (p) {
-    case "windows":
-      return join2(process.env.APPDATA || join2(home, "AppData", "Roaming"), "antigravity-usage");
-    case "macos":
-      return join2(home, "Library", "Application Support", "antigravity-usage");
-    case "linux":
-    default:
-      return join2(process.env.XDG_CONFIG_HOME || join2(home, ".config"), "antigravity-usage");
+  const getPath = (name) => {
+    switch (p) {
+      case "windows":
+        return join2(process.env.APPDATA || join2(home, "AppData", "Roaming"), name);
+      case "macos":
+        return join2(home, "Library", "Application Support", name);
+      case "linux":
+      default:
+        return join2(process.env.XDG_CONFIG_HOME || join2(home, ".config"), name);
+    }
+  };
+  const oldPath = getPath("agy-usage");
+  const newPath = getPath("agy-usage");
+  if (existsSync(oldPath)) {
+    return oldPath;
   }
+  return newPath;
 }
 function getTokensPath() {
   return join2(getConfigDir(), "tokens.json");
@@ -102,7 +111,7 @@ function getGlobalConfigPath() {
 // src/accounts/storage.ts
 function ensureAccountsDir() {
   const dir = getAccountsDir();
-  if (!existsSync(dir)) {
+  if (!existsSync2(dir)) {
     debug("accounts-storage", `Creating accounts directory: ${dir}`);
     mkdirSync(dir, { recursive: true });
   }
@@ -110,18 +119,18 @@ function ensureAccountsDir() {
 function ensureAccountDir(email) {
   ensureAccountsDir();
   const dir = getAccountDir(email);
-  if (!existsSync(dir)) {
+  if (!existsSync2(dir)) {
     debug("accounts-storage", `Creating account directory: ${dir}`);
     mkdirSync(dir, { recursive: true });
   }
 }
 function accountExists(email) {
   const dir = getAccountDir(email);
-  return existsSync(dir) && existsSync(join3(dir, "tokens.json"));
+  return existsSync2(dir) && existsSync2(join3(dir, "tokens.json"));
 }
 function listAccountEmails() {
   const accountsDir = getAccountsDir();
-  if (!existsSync(accountsDir)) {
+  if (!existsSync2(accountsDir)) {
     return [];
   }
   try {
@@ -130,7 +139,7 @@ function listAccountEmails() {
     for (const entry of entries) {
       if (entry.isDirectory()) {
         const tokensPath = join3(accountsDir, entry.name, "tokens.json");
-        if (existsSync(tokensPath)) {
+        if (existsSync2(tokensPath)) {
           emails.push(entry.name);
         }
       }
@@ -149,7 +158,7 @@ function saveAccountTokens(email, tokens) {
 }
 function loadAccountTokens(email) {
   const path = join3(getAccountDir(email), "tokens.json");
-  if (!existsSync(path)) {
+  if (!existsSync2(path)) {
     debug("accounts-storage", `No tokens file for ${email}`);
     return null;
   }
@@ -169,7 +178,7 @@ function saveAccountMetadata(email, metadata) {
 }
 function loadAccountMetadata(email) {
   const path = join3(getAccountDir(email), "metadata.json");
-  if (!existsSync(path)) {
+  if (!existsSync2(path)) {
     return null;
   }
   try {
@@ -195,7 +204,7 @@ function saveAccountCache(email, cache) {
 }
 function loadAccountCache(email) {
   const path = join3(getAccountDir(email), "cache.json");
-  if (!existsSync(path)) {
+  if (!existsSync2(path)) {
     return null;
   }
   try {
@@ -208,7 +217,7 @@ function loadAccountCache(email) {
 }
 function deleteAccount(email) {
   const dir = getAccountDir(email);
-  if (!existsSync(dir)) {
+  if (!existsSync2(dir)) {
     debug("accounts-storage", `Account ${email} does not exist`);
     return false;
   }
@@ -223,11 +232,11 @@ function deleteAccount(email) {
 }
 
 // src/accounts/config.ts
-import { existsSync as existsSync2, readFileSync as readFileSync3, writeFileSync as writeFileSync2, mkdirSync as mkdirSync2 } from "fs";
+import { existsSync as existsSync3, readFileSync as readFileSync3, writeFileSync as writeFileSync2, mkdirSync as mkdirSync2 } from "fs";
 import { dirname as dirname2 } from "path";
 function loadConfig() {
   const path = getGlobalConfigPath();
-  if (!existsSync2(path)) {
+  if (!existsSync3(path)) {
     debug("config", "No config file found, using defaults");
     return { ...DEFAULT_CONFIG };
   }
@@ -250,7 +259,7 @@ function loadConfig() {
 function saveConfig(config) {
   const path = getGlobalConfigPath();
   const dir = dirname2(path);
-  if (!existsSync2(dir)) {
+  if (!existsSync3(dir)) {
     mkdirSync2(dir, { recursive: true });
   }
   debug("config", `Saving config to ${path}`);
@@ -907,7 +916,7 @@ async function refreshAccessToken(refreshToken) {
 }
 
 // src/google/storage.ts
-import { existsSync as existsSync3, mkdirSync as mkdirSync3, readFileSync as readFileSync4, writeFileSync as writeFileSync3, unlinkSync } from "fs";
+import { existsSync as existsSync4, mkdirSync as mkdirSync3, readFileSync as readFileSync4, writeFileSync as writeFileSync3, unlinkSync } from "fs";
 import { dirname as dirname3 } from "path";
 function saveTokens(tokens) {
   const email = tokens.email;
@@ -915,7 +924,7 @@ function saveTokens(tokens) {
     const path = getTokensPath();
     const dir = dirname3(path);
     debug("storage", `Saving tokens to legacy path ${path}`);
-    if (!existsSync3(dir)) {
+    if (!existsSync4(dir)) {
       mkdirSync3(dir, { recursive: true });
     }
     writeFileSync3(path, JSON.stringify(tokens, null, 2), { mode: 384 });
@@ -938,7 +947,7 @@ function loadTokens() {
   }
   const legacyPath = getTokensPath();
   debug("storage", `Loading tokens from legacy path ${legacyPath}`);
-  if (!existsSync3(legacyPath)) {
+  if (!existsSync4(legacyPath)) {
     debug("storage", "No tokens file found");
     return null;
   }
@@ -957,7 +966,7 @@ function hasTokens() {
   if (activeEmail && accountExists(activeEmail)) {
     return true;
   }
-  return existsSync3(getTokensPath());
+  return existsSync4(getTokensPath());
 }
 function getStorageInfo() {
   const configDir = getConfigDir();
@@ -969,7 +978,7 @@ function getStorageInfo() {
     exists = accountExists(activeEmail);
   } else {
     tokensPath = getTokensPath();
-    exists = existsSync3(tokensPath);
+    exists = existsSync4(tokensPath);
   }
   return {
     configDir,
@@ -980,7 +989,7 @@ function getStorageInfo() {
 
 // src/core/errors.ts
 var NotLoggedInError = class extends Error {
-  constructor(message = "Not logged in. Run: antigravity-usage login") {
+  constructor(message = "Not logged in. Run: agy-usage login") {
     super(message);
     this.name = "NotLoggedInError";
   }
@@ -1058,7 +1067,7 @@ var PortDetectionError = class extends Error {
   }
 };
 var NoAuthMethodAvailableError = class extends Error {
-  constructor(message = "Unable to fetch quota: Antigravity is not running and you are not logged in.\n\nPlease do one of the following:\n  \u2022 Run Antigravity in your IDE (VSCode, etc.), or\n  \u2022 Login with: antigravity-usage login") {
+  constructor(message = "Unable to fetch quota: Antigravity is not running and you are not logged in.\n\nPlease do one of the following:\n  \u2022 Run Antigravity in your IDE (VSCode, etc.), or\n  \u2022 Login with: agy-usage login") {
     super(message);
     this.name = "NoAuthMethodAvailableError";
   }
@@ -1254,7 +1263,7 @@ async function loginCommand(options) {
     const accounts = manager.getAccountEmails();
     if (accounts.length > 1) {
       info(`
-You now have ${accounts.length} accounts. Use \`antigravity-usage accounts list\` to see all.`);
+You now have ${accounts.length} accounts. Use \`agy-usage accounts list\` to see all.`);
     }
     process.exit(0);
   } else {
@@ -1341,7 +1350,7 @@ function showSingleAccountStatus(email) {
   if (!tokenManager.isLoggedIn()) {
     warn("Not logged in");
     console.log();
-    info("Run `antigravity-usage login` to authenticate.");
+    info("Run `agy-usage login` to authenticate.");
     console.log();
     return;
   }
@@ -1378,7 +1387,7 @@ function showAllAccountsStatus() {
   if (emails.length === 0) {
     warn("No accounts found.");
     console.log();
-    info("Run `antigravity-usage login` to add an account.");
+    info("Run `agy-usage login` to add an account.");
     console.log();
     return;
   }
@@ -1483,7 +1492,7 @@ var CloudCodeClient = class {
       if (response.status === 401 || response.status === 403) {
         const errorBody = await response.text();
         debug("cloudcode", `Auth error body: ${errorBody}`);
-        throw new AuthenticationError("Authentication failed. Please run: antigravity-usage login");
+        throw new AuthenticationError("Authentication failed. Please run: agy-usage login");
       }
       if (response.status === 429) {
         const retryAfter = response.headers.get("retry-after");
@@ -2778,7 +2787,7 @@ function formatCredits(credits) {
 function renderAccountsTable(accounts) {
   if (accounts.length === 0) {
     console.log("\n\u{1F4ED} No accounts found.");
-    console.log("\n\u{1F4A1} Run `antigravity-usage login` to add an account.\n");
+    console.log("\n\u{1F4A1} Run `agy-usage login` to add an account.\n");
     return;
   }
   console.log("\n\u{1F4CA} Antigravity Accounts");
@@ -2824,7 +2833,7 @@ function formatQuotaRemainingBar(remainingPercentage) {
 function renderAllQuotaTable(results, options = {}) {
   if (results.length === 0) {
     console.log("\n\u{1F4ED} No accounts found.");
-    console.log("\n\u{1F4A1} Run `antigravity-usage login` to add an account.\n");
+    console.log("\n\u{1F4A1} Run `agy-usage login` to add an account.\n");
     return;
   }
   const sortedResults = [...results].sort((a, b) => {
@@ -2936,7 +2945,7 @@ async function fetchSingleAccountQuota(options) {
   if (method === "google") {
     const tokenManager = options.account ? getTokenManagerForAccount(options.account) : getTokenManager();
     if (!tokenManager.isLoggedIn()) {
-      error("Not logged in. Run: antigravity-usage login");
+      error("Not logged in. Run: agy-usage login");
       process.exit(1);
     }
   }
@@ -2973,7 +2982,7 @@ async function fetchAllAccountsQuota(options) {
   const emails = manager.getAccountEmails();
   const activeEmail = manager.getActiveEmail();
   if (emails.length === 0) {
-    error("No accounts found. Run: antigravity-usage login");
+    error("No accounts found. Run: agy-usage login");
     process.exit(1);
   }
   if (options.refresh) {
@@ -3140,7 +3149,7 @@ function doctorCommand() {
   if (!tokenManager.isLoggedIn()) {
     console.log("  Status: Not logged in");
     console.log();
-    console.log("  \u{1F4A1} Run `antigravity-usage login` to authenticate.");
+    console.log("  \u{1F4A1} Run `agy-usage login` to authenticate.");
   } else {
     console.log("  Status: Logged in");
     const email = tokenManager.getEmail();
@@ -3177,7 +3186,7 @@ function listAccountsCommand(options) {
   const summaries = manager.getAccountSummaries();
   renderAccountsTable(summaries);
   if (options.refresh) {
-    info("Use `antigravity-usage quota --all --refresh` to fetch fresh quota data.");
+    info("Use `agy-usage quota --all --refresh` to fetch fresh quota data.");
   }
 }
 async function addAccountCommand() {
@@ -3205,7 +3214,7 @@ function switchAccountCommand(email) {
         console.log(`  - ${e}`);
       }
     } else {
-      info("\nNo accounts found. Run `antigravity-usage login` to add one.");
+      info("\nNo accounts found. Run `agy-usage login` to add one.");
     }
     process.exit(1);
   }
@@ -3237,7 +3246,7 @@ function removeAccountCommand(email, options) {
 Active account: ${active || "none"}`);
       console.log(`Remaining accounts: ${remaining.length}`);
     } else {
-      info("\nNo accounts remaining. Run `antigravity-usage login` to add one.");
+      info("\nNo accounts remaining. Run `agy-usage login` to add one.");
     }
   } else {
     error(`Failed to remove account: ${email}`);
@@ -3268,9 +3277,9 @@ function currentAccountCommand() {
       for (const e of emails) {
         console.log(`  - ${e}`);
       }
-      info("\nRun `antigravity-usage accounts switch <email>` to set an active account.");
+      info("\nRun `agy-usage accounts switch <email>` to set an active account.");
     } else {
-      info("\nRun `antigravity-usage login` to add an account.");
+      info("\nRun `agy-usage login` to add an account.");
     }
   }
 }
@@ -3306,7 +3315,7 @@ async function refreshAccountCommand(email, options) {
     resetTokenManager();
     console.log();
     if (failCount > 0) {
-      warn(`${failCount} account(s) need re-authentication. Run: antigravity-usage login`);
+      warn(`${failCount} account(s) need re-authentication. Run: agy-usage login`);
     } else {
       success(`All ${successCount} account(s) refreshed successfully!`);
     }
@@ -3315,8 +3324,8 @@ async function refreshAccountCommand(email, options) {
   const targetEmail = email || manager.getActiveEmail();
   if (!targetEmail) {
     error("No account specified and no active account.");
-    info("Usage: antigravity-usage accounts refresh <email>");
-    info("   or: antigravity-usage accounts refresh --all");
+    info("Usage: agy-usage accounts refresh <email>");
+    info("   or: agy-usage accounts refresh --all");
     process.exit(1);
   }
   if (!manager.hasAccount(targetEmail)) {
@@ -3339,8 +3348,8 @@ async function refreshAccountCommand(email, options) {
     error(`
 \u274C Failed to refresh token: ${err instanceof Error ? err.message : "Unknown error"}`);
     info("\nThe refresh token may be expired. Please re-authenticate:");
-    info(`  antigravity-usage accounts switch ${targetEmail}`);
-    info("  antigravity-usage login");
+    info(`  agy-usage accounts switch ${targetEmail}`);
+    info("  agy-usage login");
     process.exit(1);
   }
 }
@@ -3355,7 +3364,7 @@ async function accountsCommand(subcommand, args, options) {
     case "switch":
       if (!args[0]) {
         error("Please specify an account email to switch to.");
-        console.log("Usage: antigravity-usage accounts switch <email>");
+        console.log("Usage: agy-usage accounts switch <email>");
         process.exit(1);
       }
       switchAccountCommand(args[0]);
@@ -3363,7 +3372,7 @@ async function accountsCommand(subcommand, args, options) {
     case "remove":
       if (!args[0]) {
         error("Please specify an account email to remove.");
-        console.log("Usage: antigravity-usage accounts remove <email>");
+        console.log("Usage: agy-usage accounts remove <email>");
         process.exit(1);
       }
       removeAccountCommand(args[0], { force: options.force });
@@ -3404,7 +3413,7 @@ function getDefaultConfig() {
 
 // src/wakeup/storage.ts
 import { join as join4 } from "path";
-import { readFileSync as readFileSync5, writeFileSync as writeFileSync4, existsSync as existsSync4, mkdirSync as mkdirSync4 } from "fs";
+import { readFileSync as readFileSync5, writeFileSync as writeFileSync4, existsSync as existsSync5, mkdirSync as mkdirSync4 } from "fs";
 var WAKEUP_DIR_NAME = "wakeup";
 var CONFIG_FILE_NAME = "config.json";
 var HISTORY_FILE_NAME = "history.json";
@@ -3414,7 +3423,7 @@ function getWakeupDir() {
 }
 function ensureWakeupDir() {
   const dir = getWakeupDir();
-  if (!existsSync4(dir)) {
+  if (!existsSync5(dir)) {
     mkdirSync4(dir, { recursive: true });
     debug("wakeup-storage", `Created wakeup directory: ${dir}`);
   }
@@ -3422,7 +3431,7 @@ function ensureWakeupDir() {
 function readJsonFile(filename, defaultValue) {
   const filepath = join4(getWakeupDir(), filename);
   try {
-    if (existsSync4(filepath)) {
+    if (existsSync5(filepath)) {
       const content = readFileSync5(filepath, "utf-8");
       return JSON.parse(content);
     }
@@ -3669,7 +3678,8 @@ function getNextRunEstimate(cronExpression) {
 import { execSync, exec as exec3 } from "child_process";
 import { promisify as promisify3 } from "util";
 var execAsync3 = promisify3(exec3);
-var CRON_COMMENT_MARKER = "antigravity-usage-wakeup";
+var CRON_COMMENT_MARKER = "agy-usage-wakeup";
+var OLD_CRON_COMMENT_MARKER = "agy-usage-wakeup";
 function getBinDirectories() {
   const dirs = /* @__PURE__ */ new Set();
   try {
@@ -3741,7 +3751,9 @@ async function saveCrontab(lines) {
   }
 }
 function removeWakeupEntries(lines) {
-  return lines.filter((line) => !line.includes(CRON_COMMENT_MARKER));
+  return lines.filter(
+    (line) => !line.includes(CRON_COMMENT_MARKER) && !line.includes(OLD_CRON_COMMENT_MARKER) && !line.includes("agy-usage wakeup trigger")
+  );
 }
 function isCronSupported() {
   return process.platform === "darwin" || process.platform === "linux";
@@ -3763,7 +3775,7 @@ async function installCronJob(cronExpression) {
     if (!hasPath) {
       filteredLines.unshift(`PATH=${pathValue}`);
     }
-    const cronLine = `${cronExpression} antigravity-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}`;
+    const cronLine = `${cronExpression} agy-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}`;
     filteredLines.push(cronLine);
     await saveCrontab(filteredLines);
     debug("cron-installer", `Installed cron job: ${cronLine}`);
@@ -3828,12 +3840,12 @@ function getManualInstructions(cronExpression) {
   const pathValue = binDirs.join(":");
   return `
 Failed to automatically install cron job. Please add manually:
-
+ 
 1. Open terminal and run: crontab -e
 
 2. Add these lines:
    PATH=${pathValue}
-   ${cronExpression} antigravity-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}
+   ${cronExpression} agy-usage wakeup trigger --scheduled # ${CRON_COMMENT_MARKER}
 
 3. Save and exit the editor
 
@@ -3850,7 +3862,7 @@ To set up manually using Task Scheduler:
 2. Create a new Basic Task
 3. Set trigger: Based on your schedule (${cronExpression})
 4. Set action: Start a program
-   - Program: antigravity-usage
+   - Program: agy-usage
    - Arguments: wakeup trigger --scheduled
 5. Save the task
 
@@ -4075,7 +4087,7 @@ async function configureWakeup() {
   const accounts = accountManager.getAccountEmails();
   if (accounts.length === 0) {
     console.log("\u274C No accounts available. Please login first:");
-    console.log("   antigravity-usage login\n");
+    console.log("   agy-usage login\n");
     return;
   }
   const { enabled } = await inquirer2.prompt([{
@@ -4200,7 +4212,7 @@ async function configureWakeup() {
       await installSchedule();
     } else {
       console.log("\n\u{1F4CB} To install later, run:");
-      console.log("   antigravity-usage wakeup install");
+      console.log("   agy-usage wakeup install");
     }
   }
   console.log("");
@@ -4244,12 +4256,12 @@ async function installSchedule() {
   const config = loadWakeupConfig();
   if (!config) {
     console.log("\u274C No wake-up configuration found.");
-    console.log("   Run: antigravity-usage wakeup config");
+    console.log("   Run: agy-usage wakeup config");
     return;
   }
   if (!config.enabled) {
     console.log("\u274C Wake-up is disabled. Enable it first:");
-    console.log("   antigravity-usage wakeup config");
+    console.log("   agy-usage wakeup config");
     return;
   }
   if (config.wakeOnReset) {
@@ -4267,8 +4279,8 @@ async function installSchedule() {
       console.log("\u2705 Cron job installed successfully!");
       console.log(`   Next run: ${getNextRunEstimate(cronExpression)}`);
       console.log("");
-      console.log("   To check status: antigravity-usage wakeup status");
-      console.log("   To uninstall: antigravity-usage wakeup uninstall");
+      console.log("   To check status: agy-usage wakeup status");
+      console.log("   To uninstall: agy-usage wakeup uninstall");
     } else {
       console.log("\u26A0\uFE0F  Automatic installation failed.");
       if (result.manualInstructions) {
@@ -4398,7 +4410,7 @@ async function showStatus() {
   if (!config) {
     console.log("   Status: Not configured");
     console.log("");
-    console.log("   To configure: antigravity-usage wakeup config");
+    console.log("   To configure: agy-usage wakeup config");
     console.log("");
     return;
   }
@@ -4419,7 +4431,7 @@ async function showStatus() {
       }
     } else {
       console.log("   Cron: \u274C Not installed");
-      console.log("         Run: antigravity-usage wakeup install");
+      console.log("         Run: agy-usage wakeup install");
     }
   }
   const lastTrigger = getLastTrigger();
@@ -4442,7 +4454,7 @@ function getTimeAgo(date) {
 
 // src/index.ts
 var program = new Command();
-program.name("antigravity-usage").description("CLI tool to check Antigravity model quota via Google Cloud Code API").version(version).option("--debug", "Enable debug mode").hook("preAction", (thisCommand) => {
+program.name("agy-usage").description("CLI tool to check Antigravity model quota via Google Cloud Code API (agy-usage)").version(version).option("--debug", "Enable debug mode").hook("preAction", (thisCommand) => {
   const opts = thisCommand.opts();
   if (opts.debug) {
     setDebugMode(true);

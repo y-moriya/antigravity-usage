@@ -19,9 +19,9 @@ describe('getConfigDir', () => {
     expect(configDir.length).toBeGreaterThan(0)
   })
 
-  it('should include antigravity-usage in path', () => {
+  it('should include agy-usage in path', () => {
     const configDir = getConfigDir()
-    expect(configDir).toContain('antigravity-usage')
+    expect(configDir).toContain('agy-usage')
   })
 })
 

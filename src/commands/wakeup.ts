@@ -107,7 +107,7 @@ async function configureWakeup(): Promise<void> {
   
   if (accounts.length === 0) {
     console.log('❌ No accounts available. Please login first:')
-    console.log('   antigravity-usage login\n')
+    console.log('   agy-usage login\n')
     return
   }
   
@@ -259,7 +259,7 @@ async function configureWakeup(): Promise<void> {
       await installSchedule()
     } else {
       console.log('\n📋 To install later, run:')
-      console.log('   antigravity-usage wakeup install')
+      console.log('   agy-usage wakeup install')
     }
   }
   
@@ -322,13 +322,13 @@ async function installSchedule(): Promise<void> {
   
   if (!config) {
     console.log('❌ No wake-up configuration found.')
-    console.log('   Run: antigravity-usage wakeup config')
+    console.log('   Run: agy-usage wakeup config')
     return
   }
   
   if (!config.enabled) {
     console.log('❌ Wake-up is disabled. Enable it first:')
-    console.log('   antigravity-usage wakeup config')
+    console.log('   agy-usage wakeup config')
     return
   }
   
@@ -350,8 +350,8 @@ async function installSchedule(): Promise<void> {
       console.log('✅ Cron job installed successfully!')
       console.log(`   Next run: ${getNextRunEstimate(cronExpression)}`)
       console.log('')
-      console.log('   To check status: antigravity-usage wakeup status')
-      console.log('   To uninstall: antigravity-usage wakeup uninstall')
+      console.log('   To check status: agy-usage wakeup status')
+      console.log('   To uninstall: agy-usage wakeup uninstall')
     } else {
       console.log('⚠️  Automatic installation failed.')
       if (result.manualInstructions) {
@@ -517,7 +517,7 @@ async function showStatus(): Promise<void> {
   if (!config) {
     console.log('   Status: Not configured')
     console.log('')
-    console.log('   To configure: antigravity-usage wakeup config')
+    console.log('   To configure: agy-usage wakeup config')
     console.log('')
     return
   }
@@ -546,7 +546,7 @@ async function showStatus(): Promise<void> {
       }
     } else {
       console.log('   Cron: ❌ Not installed')
-      console.log('         Run: antigravity-usage wakeup install')
+      console.log('         Run: agy-usage wakeup install')
     }
   }
   

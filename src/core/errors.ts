@@ -1,9 +1,9 @@
 /**
- * Custom error classes for antigravity-usage CLI
+ * Custom error classes for agy-usage CLI
  */
 
 export class NotLoggedInError extends Error {
-  constructor(message = 'Not logged in. Run: antigravity-usage login') {
+  constructor(message = 'Not logged in. Run: agy-usage login') {
     super(message)
     this.name = 'NotLoggedInError'
   }
@@ -102,7 +102,7 @@ export class PortDetectionError extends Error {
 }
 
 export class NoAuthMethodAvailableError extends Error {
-  constructor(message = 'Unable to fetch quota: Antigravity is not running and you are not logged in.\n\nPlease do one of the following:\n  • Run Antigravity in your IDE (VSCode, etc.), or\n  • Login with: antigravity-usage login') {
+  constructor(message = 'Unable to fetch quota: Antigravity is not running and you are not logged in.\n\nPlease do one of the following:\n  • Run Antigravity in your IDE (VSCode, etc.), or\n  • Login with: agy-usage login') {
     super(message)
     this.name = 'NoAuthMethodAvailableError'
   }

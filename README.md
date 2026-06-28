@@ -1,12 +1,12 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/skainguyen1412/antigravity-usage/main/images/icon.png" alt="antigravity-usage logo" width="150" height="150">
-    <h1>antigravity-usage</h1>
+    <img src="https://raw.githubusercontent.com/y-moriya/antigravity-usage/main/images/icon.png" alt="agy-usage logo" width="150" height="150">
+    <h1>agy-usage</h1>
 </div>
 
 <p align="center">
-    <a href="https://npmjs.com/package/antigravity-usage"><img src="https://img.shields.io/npm/v/antigravity-usage?color=yellow" alt="npm version" /></a>
-    <a href="https://packagephobia.com/result?p=antigravity-usage"><img src="https://packagephobia.com/badge?p=antigravity-usage" alt="install size" /></a>
-    <a href="https://www.npmjs.com/package/antigravity-usage"><img src="https://img.shields.io/npm/dt/antigravity-usage" alt="NPM Downloads" /></a>
+    <a href="https://npmjs.com/package/agy-usage"><img src="https://img.shields.io/npm/v/agy-usage?color=yellow" alt="npm version" /></a>
+    <a href="https://packagephobia.com/result?p=agy-usage"><img src="https://packagephobia.com/badge?p=agy-usage" alt="install size" /></a>
+    <a href="https://www.npmjs.com/package/agy-usage"><img src="https://img.shields.io/npm/dt/agy-usage" alt="NPM Downloads" /></a>
     <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
     <a href="https://nodejs.org"><img src="https://img.shields.io/badge/node-%3E%3D18-brightgreen.svg" alt="Node.js Version" /></a>
 </p>
@@ -16,11 +16,11 @@ A fast, lightweight, and powerful CLI tool to track your Antigravity model quota
 </p>
 
 <p align="center">
-<em>Inspired by <a href="https://github.com/ryoppippi/ccusage">ccusage</a></em>
+<em>Forked from <a href="https://github.com/skainguyen1412/antigravity-usage">antigravity-usage</a>, inspired by <a href="https://github.com/ryoppippi/ccusage">ccusage</a></em>
 </p>
 
 <div align="center">
-    <img src="https://raw.githubusercontent.com/skainguyen1412/antigravity-usage/main/images/banner.png" alt="Antigravity Usage Screenshot">
+    <img src="https://raw.githubusercontent.com/y-moriya/antigravity-usage/main/images/banner.png" alt="Antigravity Usage Screenshot">
 </div>
 
 
@@ -30,13 +30,13 @@ If you have Antigravity running in your IDE (VSCode, JetBrains, etc.), you can c
 
 ```bash
 # Install globally
-npm install -g antigravity-usage
+npm install -g agy-usage
 
 # Check quota immediately (uses your IDE's connection)
-antigravity-usage
+agy-usage
 ```
 
-That's it! The tool automatically connects to your local Antigravity server to fetch the exact same data your IDE sees.
+> 💡 **Note:** The `antigravity-usage` command is also available as a built-in alias for convenience!
 
 ---
 
@@ -46,44 +46,51 @@ Want to check quota for **multiple accounts** or when your IDE is closed?
 
 ### 1. Login with Google
 ```bash
-antigravity-usage login
+agy-usage login
 ```
 
 ### 1a. Manual Login (Headless/SSH)
 If you are on a headless server or cannot open a browser locally:
 ```bash
-antigravity-usage login --manual
+agy-usage login --manual
 ```
 Follow the on-screen instructions to paste the authentication URL into your local browser and copy the result back.
 
 ### 2. Add more accounts
 ```bash
-antigravity-usage accounts add
+agy-usage accounts add
 ```
 
 ### 3. Check everything at once
 ```bash
-antigravity-usage quota --all
+agy-usage quota --all
 ```
 
 ---
 
 ## How It Works 🛠️
 
-Antigravity Usage employs a smart "Dual-Fetch" strategy to ensure you always get data:
+`agy-usage` employs a smart "Dual-Fetch" strategy to ensure you always get data:
 
 1.  **Local Mode (Priority)**: First, it tries to connect to the Antigravity Language Server running inside your IDE.
     *   **Pros**: Fast, works offline, no extra login required.
     *   **Cons**: IDE must be open.
 2.  **Cloud Mode (Fallback)**: If Local Mode fails (or if managing multiple accounts), it uses the Google Cloud Code API.
-    *   **Pros**: Works anywhere, supports multiple accounts.
+    *   **Pros**: Works anywhere, supports multiple accounts, resolves real weekly and 5-hour limits (including consumed/exhausted states) by querying under consumer quota project ID (`default-cli-project`).
     *   **Cons**: Requires one-time login.
 
-By default, `antigravity-usage` runs in **Auto Mode**, seamlessly switching between these methods.
+By default, the command runs in **Auto Mode**, seamlessly switching between these methods.
 
 ---
 
 ## Features
+
+### 🌈 Rich Color Progress Bars & Emojis
+Visual feedback has been enhanced to instantly reflect your remaining quota level at a glance:
+- **75% or more**: 🟢 Green progress bar and text.
+- **50% to 75%**: 🟡 Yellow progress bar and text.
+- **25% to 50%**: 🟠 Orange progress bar and text.
+- **Under 25% / Exhausted**: 🔴 Red progress bar and text with ❌ indicators.
 
 ### 🤖 Auto Wakeup (macOS & Linux)
 Never waste quota again. Automatically wake up your AI models to maximize your daily limits.
@@ -94,7 +101,7 @@ Never waste quota again. Automatically wake up your AI models to maximize your d
 - **Built-in Safety**: Cooldown protection, retry logic, detailed history tracking
 - **Platform Support**: Currently available on **macOS and Linux** (Windows support coming soon)
 
-See the [Wakeup Command](#antigravity-usage-wakeup-) section for full details.
+See the [Wakeup Command](#agy-usage-wakeup-) section for full details.
 
 ### 🔐 Multi-Account Management
 Manage multiple Google accounts and compare quota across Personal, Work, and other accounts.
@@ -113,81 +120,80 @@ To keep the CLI snappy and avoid hitting API rate limits:
 - Quota data is cached for **5 minutes**.
 - Use the `--refresh` flag to force a new fetch:
     ```bash
-    antigravity-usage quota --refresh
+    agy-usage quota --refresh
     ```
 
-
 ### 🎯 Focused Model View
-By default, `antigravity-usage` hides "autocomplete" models (like `gemini-2.5-flash-002`) to reduce clutter, as these typically share quota with their main counterparts or are less relevant for tracking.
+By default, `agy-usage` hides "autocomplete" models (like `gemini-2.5-flash-002`) to reduce clutter, as these typically share quota with their main counterparts or are less relevant for tracking.
 
 To see **ALL** available models, including autocomplete ones:
 ```bash
-antigravity-usage quota --all-models
+agy-usage quota --all-models
 ```
 
 ---
 
 ## Command Reference
 
-### `antigravity-usage` (Default)
+### `agy-usage` (Default)
 Alias for `quota`. Fetches and displays usage data.
 
 ```bash
-antigravity-usage                   # Auto-detect (Local -> Cloud)
-antigravity-usage --all             # Fetch ALL accounts
-antigravity-usage --method local    # Force local IDE connection
-antigravity-usage --method google   # Force google IDE connection
-antigravity-usage --all-models      # Show ALL models (including autocomplete)
-antigravity-usage --json            # Output JSON for scripts
-antigravity-usage --version         # Show version number
+agy-usage                   # Auto-detect (Local -> Cloud)
+agy-usage --all             # Fetch ALL accounts
+agy-usage --method local    # Force local IDE connection
+agy-usage --method google   # Force google IDE connection
+agy-usage --all-models      # Show ALL models (including autocomplete)
+agy-usage --json            # Output JSON for scripts
+agy-usage --version         # Show version number
 ```
 
-### `antigravity-usage --version`
+### `agy-usage --version`
 Display the current version of the CLI tool.
 
 ```bash
-antigravity-usage --version  # or -V
+agy-usage --version  # or -V
 ```
 
-### `antigravity-usage accounts`
+### `agy-usage accounts`
 Manage your roster of Google accounts.
 
 ```bash
-antigravity-usage accounts list            # Show all accounts & status
-antigravity-usage accounts add             # Login a new account
-antigravity-usage accounts switch <email>  # Set active account
-antigravity-usage accounts remove <email>  # Logout & delete data
+agy-usage accounts list            # Show all accounts & status
+agy-usage accounts add             # Login a new account
+agy-usage accounts switch <email>  # Set active account
+agy-usage accounts remove <email>  # Logout & delete data
 ```
 
-### `antigravity-usage doctor`
+### `agy-usage doctor`
 Troubleshoot issues with your setup. Checks env vars, auth status, and local server connectivity.
 
-### `antigravity-usage status`
+### `agy-usage status`
 Quickly check if your auth tokens are valid or expired.
 
-### `antigravity-usage wakeup` 🚀
+### `agy-usage wakeup` 🚀
 **Never waste quota again.** Automatically wake up your AI models at strategic times to maximize your daily limits.
 
 > **Platform Support:** Currently available on **macOS** and **Linux**. Windows support (via Task Scheduler) is coming soon.
 
 ```bash
-antigravity-usage wakeup config     # Interactive setup (takes 30 seconds)
-antigravity-usage wakeup install    # Install to native system cron
-antigravity-usage wakeup status     # Check configuration & next run
-antigravity-usage wakeup test       # Test trigger manually (interactive)
-antigravity-usage wakeup history    # View trigger history
+agy-usage wakeup config     # Interactive setup (takes 30 seconds)
+agy-usage wakeup install    # Install to native system cron
+agy-usage wakeup status     # Check configuration & next run
+agy-usage wakeup test       # Test trigger manually (interactive)
+agy-usage wakeup history    # View trigger history
 ```
 
 **Quick Test with Flags:**
 ```bash
 # Test with specific email and model
-antigravity-usage wakeup test -e your@gmail.com -m claude-sonnet-4-5
+agy-usage wakeup test -e your@gmail.com -m claude-sonnet-4-5
 
 # Full command with custom prompt
-antigravity-usage wakeup test --email your@gmail.com --model gemini-3-flash --prompt "hello"
+agy-usage wakeup test --email your@gmail.com --model gemini-3-flash --prompt "hello"
 
 # Mix flags (missing ones will be prompted)
-antigravity-usage wakeup test -e your@gmail.com
+agy-usage wakeup test -e your@gmail.com
 ```
 
 **Available Options:**
@@ -216,7 +222,7 @@ Runs locally on your machine with zero dependencies:
 - **Portable Design**: Auto-detects Node.js path for seamless operation across different machines
 
 ```bash
-antigravity-usage wakeup install
+agy-usage wakeup install
 # ✅ Installs to your system's native crontab (macOS/Linux)
 # ✅ Runs even when terminal/antigravity is closed
 # ✅ Persists across reboots
@@ -240,7 +246,7 @@ When triggered, it wakes up **ALL** your accounts simultaneously, ensuring none 
 
 #### 📊 Real-Time Monitoring
 ```bash
-antigravity-usage wakeup status
+agy-usage wakeup status
 ```
 Shows:
 - ✅ Enabled/disabled status
@@ -249,11 +255,13 @@ Shows:
 - 📝 Last trigger result
 - ⚙️ Cron installation status
 
-## Configuration
+## Configuration & Migration
 Data is stored in your system's standard config location:
-- **macOS**: `~/Library/Application Support/antigravity-usage/`
-- **Linux**: `~/.config/antigravity-usage/`
-- **Windows**: `%APPDATA%/antigravity-usage/`
+- **macOS**: `~/Library/Application Support/agy-usage/`
+- **Linux**: `~/.config/agy-usage/`
+- **Windows**: `%APPDATA%/agy-usage/`
+
+> 🔄 **Seamless Migration:** If you previously used `antigravity-usage`, the CLI automatically detects and uses your existing configuration directory under `antigravity-usage`, so you won't lose your logged-in accounts or settings!
 
 ## Development
 ```bash

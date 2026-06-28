@@ -2,7 +2,7 @@
  * Login command - authenticate with Google
  * 
  * This is kept for backward compatibility.
- * For multi-account management, use `antigravity-usage accounts add`
+ * For multi-account management, use `agy-usage accounts add`
  */
 
 import { startOAuthFlow } from '../google/oauth.js'
@@ -38,7 +38,7 @@ export async function loginCommand(options: LoginOptions): Promise<void> {
     
     const accounts = manager.getAccountEmails()
     if (accounts.length > 1) {
-      info(`\nYou now have ${accounts.length} accounts. Use \`antigravity-usage accounts list\` to see all.`)
+      info(`\nYou now have ${accounts.length} accounts. Use \`agy-usage accounts list\` to see all.`)
     }
     
     process.exit(0)

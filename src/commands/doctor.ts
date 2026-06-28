@@ -39,7 +39,7 @@ export function doctorCommand(): void {
   if (!tokenManager.isLoggedIn()) {
     console.log('  Status: Not logged in')
     console.log()
-    console.log('  💡 Run `antigravity-usage login` to authenticate.')
+    console.log('  💡 Run `agy-usage login` to authenticate.')
   } else {
     console.log('  Status: Logged in')
     
