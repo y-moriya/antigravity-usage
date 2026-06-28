@@ -27,12 +27,22 @@ function parseResetTime(resetTime?: string): number | undefined {
  */
 function parseModelInfo(modelId: string, model: ModelInfo): ModelQuotaInfo {
   const quotaInfo = model.quotaInfo
+  const hasResetTime = !!quotaInfo?.resetTime
+  
+  let remainingPercentage = quotaInfo?.remainingFraction
+  let isExhausted = quotaInfo?.isExhausted ?? (quotaInfo?.remainingFraction === 0)
+
+  // If there is a reset time but remaining fraction is missing, it means quota is exhausted (0%)
+  if (hasResetTime && remainingPercentage === undefined) {
+    remainingPercentage = 0
+    isExhausted = true
+  }
 
   return {
     label: model.displayName || model.label || modelId,
     modelId: modelId,
-    remainingPercentage: quotaInfo?.remainingFraction,
-    isExhausted: quotaInfo?.isExhausted ?? (quotaInfo?.remainingFraction === 0),
+    remainingPercentage,
+    isExhausted,
     resetTime: quotaInfo?.resetTime,
     timeUntilResetMs: parseResetTime(quotaInfo?.resetTime),
     isAutocompleteOnly: modelId.includes('gemini-2.5') || (model.displayName || '').includes('Gemini 2.5')
